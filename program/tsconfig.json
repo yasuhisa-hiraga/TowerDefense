@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+
+  // ＊絶対pathでimportできるように修正 
+  // 1. baseUrlとpaths を指定
+  // 2. vite.config.ts にも追記（該当ファイル参照）
+  // そうすることで、import Game from '@/feature/Game/Game ' などで参照できる
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"] // vite.config.tsも修正
+    },
+  },
+  // ------
+}
