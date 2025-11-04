@@ -5,6 +5,8 @@ import StatusMessagePanel from './StatusMessagePanel'
 import NextWaveMessage from './NextWaveMessage'
 import FieldCanvas from './FieldCanvas'
 import UnitCanvas from './UnitCanvas'
+import { Enemy } from './models/Enemy';
+import { Tower } from './models/Tower';
 import { Bfs } from './models/Bfs'
 import {MAP_DATA, TOWER_DATA_LIST, ENEMY_DATA_LIST, WAVE_DATA_LIST} from '@/data/gameData'
 import iconCoin from '@/assets/img/icon_coin_tower.png'
@@ -162,9 +164,9 @@ function Game(){
 	/**
 	 * タワーのアップグレード
 	 */
-	const handleUpgrade = ( towerInstance )=>{
-		console.log( 'coin:', coin)
-		console.log( 'towerInstance:', towerInstance)
+	const handleUpgrade = ( towerInstance:Tower )=>{
+		// console.log( 'coin:', coin)
+		// console.log( 'towerInstance:', towerInstance)
 
 		const upgradeCost = towerInstance.cost * towerInstance.lv;
 
@@ -208,7 +210,7 @@ function Game(){
 	 * 
 	 * @param {x:number,y:number} - mapIndex
 	 */
-	const canvasTap = ( mapIndex )=>{
+	const canvasTap = ( mapIndex:MapIndex )=>{
 		// クリックしたとこのマップ情報
 		const mapDataInfo = getMapData( mapIndex.x, mapIndex.y );
 		console.log('mapDataInfo:',mapDataInfo)
@@ -260,7 +262,7 @@ function Game(){
 	/**
 	 * 敵を撃破
 	 */
-	const handleDestroy = ( enemy ) =>{
+	const handleDestroy = ( enemy:Enemy ) =>{
 		setCoin( prev => {
 	        // 更新後の値を返す
 	        return prev + enemy.reward;
@@ -275,7 +277,7 @@ function Game(){
 	/**
 	 * 敵にゴールされた
 	 */
-	const handleGoal = ( enemy ) =>{
+	const handleGoal = ( enemy:Enemy ) =>{
 		setLife( prevLife => {
 	        return prevLife - enemy.life;
 	    });
@@ -450,7 +452,7 @@ function Game(){
 
 	// 現状メッセージ
 	const statusMessageTimerRef = useRef();
-	function showStatusMessage( message ){
+	function showStatusMessage( message:string ){
 		if( statusMessageTimerRef.current  ){
 			clearTimeout( statusMessageTimerRef.current );
 		}

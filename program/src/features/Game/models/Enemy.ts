@@ -1,6 +1,14 @@
 //================================================
 // enemy
 //================================================
+/**
+ * MAP_DATAの配列参照用
+ */
+interface MapIndex{
+    x: number;
+    y: number;
+}
+
 export class Enemy {
     // パラメータ
     public id : number;
@@ -84,11 +92,11 @@ export class Enemy {
     }
 
     /**
-     * 'x_y'を与えて、localのpx座標x,yを返す
+     * localのpx座標x,yを返す
+     * @param {mapIndex} - {x:number,y:number}
+     * @return {object} - {x:number,y:number}
      */
-    private getLocalPoint( position ){
-    	// const x = pathString.split('_')[0] * this.tileSize;
-    	// const y = pathString.split('_')[1] * this.tileSize;
+    private getLocalPoint( position:MapIndex ){
     	return {
     		x : position.x * this.tileSize,
     		y : position.y * this.tileSize,
@@ -97,8 +105,10 @@ export class Enemy {
 
     /**
      * mapIndex(mapDataにおけるxy座標)
+     * @param {string} pathString - 'x_y'
+     * @return {mapIndex} - {x:number,y:number}
      */
-    private getMapIndex( pathString ){
+    private getMapIndex( pathString:string ){
     	const x = pathString.split('_')[0];
     	const y = pathString.split('_')[1];
 
@@ -109,7 +119,7 @@ export class Enemy {
     }
 
 
-   	public draw( ctx: CanvasRenderingContext2D){
+   	public draw( ctx: CanvasRenderingContext2D ){
    		ctx.fillStyle = 'red';
 		ctx.fillRect( this.x+5 , this.y+5 , 30, 30 );
 		// life

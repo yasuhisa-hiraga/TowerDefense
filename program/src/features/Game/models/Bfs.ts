@@ -47,7 +47,7 @@ export class Bfs {
 
 
     // 指定地点から一番近い 3 を探して、そのpathを返す
-    public bfs( map , startX, startY, h , w ){
+    public bfs( map:array , startX:number, startY:number, h:number , w:number ){
         
         const startNode = startX+'_'+startY;
         const queue = [{ node: startNode , path:[startNode] }];
@@ -90,7 +90,7 @@ export class Bfs {
     }
 
     // 指定ノードの内容を取得
-    private getElement( map , nodeXY ){
+    private getElement( map:array , nodeXY:string ){
         let x = nodeXY.split('_')[0];
         let y = nodeXY.split('_')[1];
         
@@ -98,7 +98,7 @@ export class Bfs {
     }
 
     // 特定地点の隣人を取得
-    private getNeighbors( map , nodeXY , h , w ){
+    private getNeighbors( map:array , nodeXY:string , h:number , w:number ){
         let ns = [];
         
         let x = Number( nodeXY.split('_')[0] );

@@ -477,7 +477,7 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
  * 当たり判定を変える場合はここを修正する
  * @param {string} type
  */
-function getHitRangeSquared( type ){
+function getHitRangeSquared( type:string ){
 
 	let bulletRadius = 5;  // 弾丸の半径
 	let targetRadius = 20; // ターゲットの半径
