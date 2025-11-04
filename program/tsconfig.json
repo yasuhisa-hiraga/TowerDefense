@@ -10,9 +10,9 @@
   // 2. vite.config.ts にも追記（該当ファイル参照）
   // そうすることで、import Game from '@/feature/Game/Game ' などで参照できる
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["src/*"] // vite.config.tsも修正
+      "@/*": ["*"] // vite.config.tsも修正
     },
   },
   // ------

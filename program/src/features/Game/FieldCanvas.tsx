@@ -1,18 +1,25 @@
 import { useRef, useEffect, memo } from 'react';
-import { GRID_SIZE, MAP_DATA } from '@/data/gameData';
+import { GRID_SIZE, MAP_DATA } from '@/data/gameData'
 
-function FieldCanvas({mapData}){
+type MapData = any[][];
+interface FieldCanvasProps {
+  mapData: MapData;
+}
+
+
+function FieldCanvas({mapData}:FieldCanvasProps){
 
 	console.log('再レンダリング FieldCanvas')
 
-	const canvasBgRef    = useRef();
+	const canvasBgRef    = useRef<HTMLCanvasElement>(null);
 
 	useEffect(()=>{
 		const bg = canvasBgRef.current;
+		if(!bg)return;
 		const ctxBg = bg.getContext('2d');
 
 		// 地形描画		
-		drawMap( ctxBg, mapData );
+		if(ctxBg)drawMap( ctxBg, mapData );
 	});
 
 	// 一番最後
@@ -25,7 +32,7 @@ function FieldCanvas({mapData}){
 	/**
 	 * mapの描画
 	 */
-	function drawMap( ctx:CanvasRenderingContext2D, mapData ){
+	function drawMap( ctx:CanvasRenderingContext2D, mapData:MapData ){
 
 		// console.log('mapData:',mapData)
 

@@ -1,40 +1,33 @@
 //================================================
 // enemy
 //================================================
-/**
- * MAP_DATAの配列参照用
- */
-interface MapIndex{
-    x: number;
-    y: number;
-}
+import { GRID_SIZE } from '@/data/gameData';
+import type { Position, EnemyData } from '@/types/game'
 
 export class Enemy {
     // パラメータ
-    public id : number;
+    public id : string;
     public type : string;
     public speed : number;
     public life  : number;
-    // protected range: number;
 
     // 移動path
-    private path: array; // スタートからゴールまでのルートpath
+    public path: Array<string>; // スタートからゴールまでのルートpath
 
     // ピクセル座標
     public x: number;
     public y: number;
     public isGoal: boolean;
 
-    // mapIndex
-    public position: object;
+    public position: Position;
 
     // pathのindex参照
     public pathIndex : number;
 
-    private tileSize : number;
+    public reward: number;
 
     // コンストラクタ：インスタンス生成時に実行される初期化メソッド
-    constructor( params:object, path:array ) {
+    constructor( params:EnemyData, path:Array<string> ) {
     	this.id    = params.id;
     	this.type  = params.type;
         this.speed = params.speed;
@@ -44,10 +37,10 @@ export class Enemy {
 
         this.isGoal = false;
         this.pathIndex = 0;
-        this.tileSize = 40;//1タイルの縦横サイズ(px)
 
         // 最初の座標
-        const currentPoint = this.getLocalPoint( this.path[ this.pathIndex ] );
+        this.position = this.getMapIndex( this.path[ this.pathIndex ] );
+        const currentPoint:Position = this.getLocalPoint( this.position );
         this.x = currentPoint.x;
         this.y = currentPoint.y;
         this.pathIndex++;
@@ -96,10 +89,10 @@ export class Enemy {
      * @param {mapIndex} - {x:number,y:number}
      * @return {object} - {x:number,y:number}
      */
-    private getLocalPoint( position:MapIndex ){
+    private getLocalPoint( position:Position ){
     	return {
-    		x : position.x * this.tileSize,
-    		y : position.y * this.tileSize,
+    		x : position.x * GRID_SIZE,
+    		y : position.y * GRID_SIZE,
     	}
     }
 
@@ -124,6 +117,6 @@ export class Enemy {
 		ctx.fillRect( this.x+5 , this.y+5 , 30, 30 );
 		// life
 		ctx.fillStyle = 'white';
-		ctx.fillText(this.life, this.x+15, this.y+20);
+		ctx.fillText( String(this.life), this.x+15, this.y+20);
    	}
 }

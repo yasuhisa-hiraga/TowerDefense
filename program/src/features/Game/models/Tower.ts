@@ -3,10 +3,11 @@
 //================================================
 import { Enemy } from './Enemy';
 import { GRID_SIZE } from '@/data/gameData';
+import type { TowerData, Position } from '@/types/game'
 
 export class Tower {
 
-	public id:number;
+	public id:string;
 	public type:string;
 	public cost:number; //建築コスト
 	public speed:number; //弾速
@@ -15,14 +16,14 @@ export class Tower {
 	public delay:number; //射出後のディレイ
 	public lv:number; //レベル
 
-	private position:object;//{x,y} mapData index
+	public position:Position;
 
 	public x:number;
 	public y:number;
 
-	private beforeTime:number;
+	private beforeAttackTime:number;
 
-	constructor( params:object, position:object ) {
+	constructor( params:TowerData, position:Position ) {
 		this.id = params.id;
 		this.type = params.type;
 		this.cost = params.cost;
@@ -35,11 +36,9 @@ export class Tower {
 
 		this.position = position;
 
-		this.tileSize = GRID_SIZE;
-
 		// 座標
-        this.x = this.position.x * this.tileSize;
-        this.y = this.position.y * this.tileSize;
+        this.x = this.position.x * GRID_SIZE;
+        this.y = this.position.y * GRID_SIZE;
 
         this.beforeAttackTime = 0;
 	}
@@ -49,12 +48,12 @@ export class Tower {
 	 * 攻撃対象を返す
 	 */
 	public update( enemyList:Enemy[], time:number ){
-		let targetEnemyList = [];
+		let targetEnemyList:Enemy[] = [];
 		// 前回の攻撃からディレイが経過してたら攻撃する
 		let dif = time - this.beforeAttackTime;
 		// console.log('dif:',dif)
 		if( dif >= this.delay ){
-			targetEnemyList = this.getTargetList( enemyList, time );
+			targetEnemyList = this.getTargetList( enemyList );
 			if( targetEnemyList.length > 0 ){
 				this.beforeAttackTime = time;
 			}
@@ -67,7 +66,7 @@ export class Tower {
 	 * 射程範囲内のエネミーを返す
 	 */
 	private getTargetList( enemyList:Enemy[] ){
-		let targetEnemyList = [];
+		let targetEnemyList:Enemy[] = [];
 		for( let i=0;i<enemyList.length;i++){
 			const enemy = enemyList[i];
 			let dis = this.getDistance( enemy );

@@ -13,4 +13,12 @@ export default defineConfig({
     },
   },
   // ----
+
+  esbuild: {
+    // 以下の関数呼び出しをビルド時に削除する
+    pure: ['console.log', 'console.info'],
+  },
+  build: {
+    minify: 'esbuild', // esbuild のミニファイアを使用
+  },
 })

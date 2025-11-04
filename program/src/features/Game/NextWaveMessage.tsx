@@ -1,4 +1,11 @@
-function NextWaveMessage({status, onStop, onStart, onRetry}) {
+interface NextWaveMessageProps {
+    status:string;
+    onStop:()=> void;
+    onStart:()=> void;
+    onRetry:()=> void;
+}
+
+function NextWaveMessage({status, onStop, onStart, onRetry}:NextWaveMessageProps) {
 
   // if(!children){
   //   return;

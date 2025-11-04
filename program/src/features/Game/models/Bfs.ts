@@ -1,15 +1,22 @@
 //================================================
 // 幅優先探索でスタート(2)からゴール(3)までのルートを返す
 //================================================
+import type { MapData } from '@/types/game'
+
+interface bfsQueue {
+    node: string;
+    path: string[]; 
+}
+
 export class Bfs {
-    private mapData: array;
+    private mapData: MapData;
 
     /**
      * [ [0,0,0,0],[0,0,1,0],] のようなmapData
      * @param {array} mapData - 
      * 
      */
-    constructor(mapData: array ) {
+    constructor(mapData: MapData ) {
         this.mapData = mapData;
     }
 
@@ -47,17 +54,21 @@ export class Bfs {
 
 
     // 指定地点から一番近い 3 を探して、そのpathを返す
-    public bfs( map:array , startX:number, startY:number, h:number , w:number ){
+    public bfs( map:MapData , startX:number, startY:number, h:number , w:number ){
         
         const startNode = startX+'_'+startY;
-        const queue = [{ node: startNode , path:[startNode] }];
+        const queue:bfsQueue[] = [{ node: startNode , path:[startNode] }];
         
         // 訪問済みの場所
         const visited = new Set();
         visited.add( startNode );
         
         while( queue.length ){
-            const q = queue.shift();
+            const q:bfsQueue | undefined = queue.shift();
+
+            if(!q){
+                return null;
+            }
 
             // 3(ゴール)かどうかしらべる
             const element = this.getElement( map , q.node );
@@ -70,7 +81,7 @@ export class Bfs {
             // 進行不能の場所じゃなければ、隣人から調査続行
             if( element != 0 ){
                 // 見つからなかったので隣人を調査
-                const neighbors = this.getNeighbors( map , q.node , h , w );
+                const neighbors = this.getNeighbors( q.node , h , w );
                 
                 for( let i=0;i<neighbors.length;i++){
                     const n = neighbors[i];
@@ -90,15 +101,15 @@ export class Bfs {
     }
 
     // 指定ノードの内容を取得
-    private getElement( map:array , nodeXY:string ){
-        let x = nodeXY.split('_')[0];
-        let y = nodeXY.split('_')[1];
+    private getElement( map:MapData , nodeXY:string ){
+        let x = Number( nodeXY.split('_')[0] );
+        let y = Number( nodeXY.split('_')[1] );
         
         return map[y][x];
     }
 
     // 特定地点の隣人を取得
-    private getNeighbors( map:array , nodeXY:string , h:number , w:number ){
+    private getNeighbors( nodeXY:string , h:number , w:number ){
         let ns = [];
         
         let x = Number( nodeXY.split('_')[0] );

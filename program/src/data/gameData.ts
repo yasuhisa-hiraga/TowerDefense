@@ -1,6 +1,7 @@
 export const TOWER_DATA_LIST = [
   // 単体攻撃タイプ
   {
+    id:'dummy',
     type :'arrow',
     cost :50,
     speed:1.5,//弾速
@@ -13,6 +14,7 @@ export const TOWER_DATA_LIST = [
 
   // 貫通攻撃タイプ
   {
+    id:'dummy',
     type :'canon',
     cost :100,
     speed:1,
@@ -25,6 +27,7 @@ export const TOWER_DATA_LIST = [
 
   // 妨害タイプ
   {
+    id:'dummy',
     type :'wizard',
     cost :150,
     speed:1.5,

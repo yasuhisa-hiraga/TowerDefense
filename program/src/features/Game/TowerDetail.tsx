@@ -1,11 +1,20 @@
-import React, { useRef, useState, useEffect } from 'react'
+// import React, { useRef, useState, useEffect } from 'react'
 import iconCross from '@/assets/img/icon_cross.png'
 import iconCoin from '@/assets/img/icon_coin_tower.png'
+import type { TowerData } from '@/types/game'
+
+
+interface TowerDetailProps {
+	children:string;
+	towerData:TowerData;
+	onUpgrade:(towerData: TowerData) => void;
+	onCancel:()=> void;
+}
 
 /**
  * 詳細データパネル
  */
-function TowerDetail( {children, towerData, onCancel, onUpgrade } ){
+function TowerDetail( {children, towerData, onCancel, onUpgrade }:TowerDetailProps ){
 
 	console.log('再レンダリング TowerPanel:',towerData);
 

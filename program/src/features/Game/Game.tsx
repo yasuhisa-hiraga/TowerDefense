@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import TowerList from './TowerList'
 import TowerDetail from './TowerDetail'
 import StatusMessagePanel from './StatusMessagePanel'
@@ -6,36 +6,39 @@ import NextWaveMessage from './NextWaveMessage'
 import FieldCanvas from './FieldCanvas'
 import UnitCanvas from './UnitCanvas'
 import { Enemy } from './models/Enemy';
-import { Tower } from './models/Tower';
+// import { Tower } from './models/Tower';
 import { Bfs } from './models/Bfs'
 import {MAP_DATA, TOWER_DATA_LIST, ENEMY_DATA_LIST, WAVE_DATA_LIST} from '@/data/gameData'
 import iconCoin from '@/assets/img/icon_coin_tower.png'
 import iconLife from '@/assets/img/icon_fav_full.png'
+import type { TowerData, MapIndex } from '@/types/game'
+import type { UnitCanvasRefHandle } from '@/features/Game/UnitCanvas';
 
-interface TowerData {
-	type: string;
-	cost: number;
-	speed: number;
-	power: number;
-	range: number;
-	delay: number;
-	lv: number;
-}
+// interface TowerData {
+// 	type: string;
+// 	cost: number;
+// 	speed: number;
+// 	power: number;
+// 	range: number;
+// 	delay: number;
+// 	lv: number;
+// }
 
-/**
- * MAP_DATAの配列参照用
- */
-interface MapIndex{
-	x: number;
-	y: number;
-}
+// /**
+//  * MAP_DATAの配列参照用
+//  */
+// interface MapIndex{
+// 	x: number;
+// 	y: number;
+// }
 
 function Game(){
 
 	console.log('Game が再レンダリングされました');
 
 	// unitCanvasに受け渡す専用のref
-	const unitRef = useRef( null );
+	// const unitRef = useRef( null );
+	const unitRef = useRef<UnitCanvasRefHandle | null>(null);
 
 	// const [isVisibleStartBtn , setVisibleStartBtn] = useState( true );
 	// const [isVisiblePlayStopBtn , setVisiblePlayStopBtn] = useState( false );
@@ -50,8 +53,8 @@ function Game(){
 	const [coin, setCoin] = useState( 100 );
 	const [life, setLife] = useState( 100 );
 	const [message, setMessage] = useState( '' );
-	const [currentSelectTower, setCurrentSelectTower] = useState(null);
-	const [towerDataList, setTowerData ] = useState(TOWER_DATA_LIST);
+	const [currentSelectTower, setCurrentSelectTower] = useState<TowerData|null>(null);
+	const [towerDataList, setTowerData ] = useState<TowerData[]>(TOWER_DATA_LIST);
 	const [mapData, setMapData] = useState(MAP_DATA);
 	const [destroyCountInWave, setDestroyCount] = useState(0);
 	const [statusMessage, setStatusMessage] = useState('');
@@ -100,12 +103,12 @@ function Game(){
 		    delay:t.delay,
 		}
 		towerCountRef.current++;
-		unitRef.current.addTower( params, mapIndex );
+		unitRef.current?.addTower( params, mapIndex );
 
 		// mapデータも更新
 		setMapData( prev =>{
 			// copy
-			const newMapData = prev.map(row => [...row]);
+			const newMapData:any[][] = prev.map(row => [...row]);
 			// 書き換え
 			newMapData[mapIndex.y][mapIndex.x] = towerId;
 			return newMapData;
@@ -117,7 +120,7 @@ function Game(){
 
 		const e = getEnemy( type )[0];
 		const params = {
-			id : enemyCountRef.current,
+			id : enemyCountRef.current.toString(),
 			type: e.type,
 			life: e.life,
 			speed: e.speed,
@@ -126,17 +129,17 @@ function Game(){
 		enemyCountRef.current++;
 
 		// 新しいエネミーをqueueに追加
-		unitRef.current.addEnemyQueue( params, enemyPath, delay);
+		unitRef.current?.addEnemyQueue( params, enemyPath, delay);
 	}
 
 	// 常に最新のtowerDataListを参照する
-	const getTower = useCallback((type) => {
+	const getTower = useCallback((type:string) => {
 	    return towerDataList.filter((e) => {
 	        return e.type == type;
 	    });
 	}, [towerDataList]);
 
-	const getMapData = useCallback(( x,y ) => {
+	const getMapData = useCallback(( x:number,y:number ) => {
 	    return mapData[y][x];
 	}, [mapData]);
 
@@ -164,7 +167,7 @@ function Game(){
 	/**
 	 * タワーのアップグレード
 	 */
-	const handleUpgrade = ( towerInstance:Tower )=>{
+	const handleUpgrade = ( towerInstance:TowerData )=>{
 		// console.log( 'coin:', coin)
 		// console.log( 'towerInstance:', towerInstance)
 
@@ -176,7 +179,7 @@ function Game(){
 		else{
 			// LvUp
 			setTowerData( prev =>{
-				let updatedTower;
+				let updatedTower: TowerData | null = null;
 				let list = [];
 				for(let i=0;i<prev.length;i++){
 					const tower = {...prev[i]};//コピー
@@ -191,7 +194,7 @@ function Game(){
 				}
 
 				// 現在のタワーデータも更新
-				setCurrentSelectTower( updatedTower );
+				if( updatedTower )setCurrentSelectTower( updatedTower );
 
 				return list;
 			});
@@ -212,7 +215,7 @@ function Game(){
 	 */
 	const canvasTap = ( mapIndex:MapIndex )=>{
 		// クリックしたとこのマップ情報
-		const mapDataInfo = getMapData( mapIndex.x, mapIndex.y );
+		const mapDataInfo:any = getMapData( mapIndex.x, mapIndex.y );
 		console.log('mapDataInfo:',mapDataInfo)
 		if( currentSelectTower && mapDataInfo == 0 ){
 			// 設置
@@ -222,10 +225,10 @@ function Game(){
 		// タワーの場合は除去してコインに戻す
 		else if( typeof mapDataInfo == 'string'){
 			// 削除
-			unitRef.current.removeTower( {id:mapDataInfo} );
+			unitRef.current?.removeTower( {id:mapDataInfo} );
 
 			// キャンバス更新
-			unitRef.current.refreshCanvasManually();
+			unitRef.current?.refreshCanvasManually();
 
 			// コインを増加
 			setCoin( prev =>{
@@ -324,7 +327,7 @@ function Game(){
 	 */
 	const handleStartWave = ()=>{
 		// 開始
-		unitRef.current.play();
+		unitRef.current?.play();
 		setBtnLabel('STOP');
 
 		setNextWaveStatus('');
@@ -348,7 +351,7 @@ function Game(){
         	setNextWaveStatus('gameover');
             // showStatusMessage('ゲームオーバー');
             // ゲーム停止してリトライ表示
-            unitRef.current.stop();
+            unitRef.current?.stop();
 			setBtnLabel('RETRY');
 
 			return;
@@ -367,7 +370,7 @@ function Game(){
 				setNextWaveStatus('clear');
 
 				// ゲーム停止してリトライ表示
-	            unitRef.current.stop();
+	            unitRef.current?.stop();
 				setBtnLabel('RETRY');
 			}
 			else{
@@ -377,7 +380,7 @@ function Game(){
 				goNextWave();
 
 				// 一旦停止
-				unitRef.current.stop();
+				unitRef.current?.stop();
 				setBtnLabel('PLAY');
 
 			}
@@ -422,20 +425,20 @@ function Game(){
 	/**
 	 * 次のエネミー
 	 */
-	const goNextWave = useCallback(()=>{
+	const goNextWave = ()=>{
 		console.log('つぎのwaveへ')
 
 		// エネミーの出現も戻す
 		enemyIndex.current = 0;
 
 		// 破壊した数をリセット
-		setDestroyCount( prev =>{
+		setDestroyCount( _prev =>{
 			return 0;
 		})
 
 		// エネミー配置
 		addNextEnemy();
-	});
+	};
 
 	const addNextEnemy = ()=>{
 		const wave = WAVE_DATA_LIST[waveIndex.current];
@@ -451,13 +454,13 @@ function Game(){
 	}
 
 	// 現状メッセージ
-	const statusMessageTimerRef = useRef();
+	const statusMessageTimerRef = useRef<number | null>(null);
 	function showStatusMessage( message:string ){
 		if( statusMessageTimerRef.current  ){
 			clearTimeout( statusMessageTimerRef.current );
 		}
-		statusMessageTimerRef.current = setStatusMessage( message );
-		setTimeout(()=>{
+		setStatusMessage( message );
+		statusMessageTimerRef.current = setTimeout(()=>{
 			setStatusMessage('');
 		},2000);
 	}
@@ -468,20 +471,18 @@ function Game(){
 	const playStop = () =>{
 		switch( btnLabel ){
 			case 'GAME START':
-				unitRef.current.play();
-				// setVisibleStartBtn(false);
-				// setVisiblePlayStopBtn(true);
+				unitRef.current?.play();
 				goNextWave();
 				setBtnLabel('STOP');
 				break;
 
 			case 'STOP':
-				unitRef.current.stop();
+				unitRef.current?.stop();
 				setBtnLabel('PLAY');
 				break;
 
 			case 'PLAY':
-				unitRef.current.play();
+				unitRef.current?.play();
 				setBtnLabel('STOP');
 				break;
 
@@ -507,10 +508,12 @@ function Game(){
 				<h1>設置したいタワーを選んでください</h1>
 
 				<TowerList towerDataList={towerDataList} onTowerSelect={handleTowerSelect}/>
-				<TowerDetail towerData={currentSelectTower} 
-		  			onCancel={handleTowerCancel}
-		  			onUpgrade={handleUpgrade}
-		  		>{message}</TowerDetail>
+				{currentSelectTower && 
+					<TowerDetail towerData={currentSelectTower} 
+			  			onCancel={handleTowerCancel}
+			  			onUpgrade={handleUpgrade}
+			  		>{message}</TowerDetail>
+		  		}
 
 			</div>
 
@@ -523,7 +526,7 @@ function Game(){
 			  	<div className="game-canvas-container">
 					<FieldCanvas mapData={mapData}></FieldCanvas>
 					<UnitCanvas 
-						mapData={MAP_DATA} ref={unitRef} 
+						ref={unitRef} 
 						onTap={canvasTap} onDestroy={handleDestroy} onGoal={handleGoal}
 					></UnitCanvas>
 				</div>

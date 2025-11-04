@@ -1,5 +1,8 @@
+interface StatusMessagePanelProps {
+    children:string;
+}
 
-function StatusMessagePanel( {children} ){
+function StatusMessagePanel( {children}:StatusMessagePanelProps ){
 
     // メッセージを引き渡されてる場合は表示
     if (!children) {

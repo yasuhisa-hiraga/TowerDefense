@@ -29,7 +29,9 @@ export class Bullet {
 
         // ターゲットが現在地と同じで距離がゼロの場合、ゼロ除算を避ける
         if (distance === 0) {
-            return { dx: 0, dy: 0 };
+            // return { dx: 0, dy: 0 };
+            this.dx = 0;
+            this.dy = 0;
         }
         
         // C. 正規化 (単位ベクトルの作成)

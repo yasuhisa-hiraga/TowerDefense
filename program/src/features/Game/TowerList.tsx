@@ -1,9 +1,14 @@
-import React, { useRef, useState } from 'react'
 import TowerPanel from './TowerPanel'
+import type { TowerData } from '@/types/game'
 
-function TowerList( {towerDataList, onTowerSelect}){
+interface TowerListProps {
+    towerDataList: TowerData[]; // TowerData の配列
+    onTowerSelect: (towerData: TowerData) => void; // TowerData を引数にとる関数
+}
 
-	const handleTowerClick = ( towerData )=>{
+function TowerList( {towerDataList, onTowerSelect}:TowerListProps){
+
+	const handleTowerClick = ( towerData:TowerData )=>{
 		onTowerSelect( towerData );
 	}
 
@@ -12,7 +17,7 @@ function TowerList( {towerDataList, onTowerSelect}){
 		<div className="flex justify-around">
 		{
 			towerDataList.map(( towerData )=>(
-				<TowerPanel key={towerData.type} {...towerData} onSelect={handleTowerClick}/>
+				<TowerPanel key={towerData.type} towerData={towerData} onSelect={handleTowerClick}/>
 			))
 		}		
 		</div>

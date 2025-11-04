@@ -1,16 +1,21 @@
-import React, { useRef, useState } from 'react'
 import iconCoin from '@/assets/img/icon_coin_tower.png'
+import type { TowerData } from '@/types/game'
 
-function TowerPanel( props ){
+interface TowerPanelProps {
+	onSelect:(towerData: TowerData) => void;
+	towerData:TowerData;
+}
+
+function TowerPanel( props:TowerPanelProps ){
 
 
 	const onClick = ()=>{
-		props.onSelect( props )
+		props.onSelect( props.towerData )
 	}
 
 	let content;
 
-	switch( props.type ){
+	switch( props.towerData.type ){
 		case 'arrow':
 			content = ( <div className="rounded-full bg-white h-4 w-4"></div>)
 			break;
@@ -27,11 +32,11 @@ function TowerPanel( props ){
 		<div onClick={onClick} className="border p-3 shadow rounded-md hover:bg-blue-100" >
 			<div className="flex flex-row gap-1 items-center" >
 				{content}
-				<div>{props.type}</div>
+				<div>{props.towerData.type}</div>
 			</div>
 			<div className="flex flex-row gap-1">
 				<img src={iconCoin} className="w-6 object-contain"/>
-				<span>{props.cost * props.lv}</span>
+				<span>{props.towerData.cost * props.towerData.lv}</span>
 			</div>
 		</div>
 	)

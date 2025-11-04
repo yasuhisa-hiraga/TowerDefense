@@ -1,16 +1,39 @@
-import React, { useRef, forwardRef, useImperativeHandle, useEffect, useState, memo } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle, useEffect, memo } from 'react';
 import '@/App.css'
-import { Bfs } from './models/Bfs';
 import { Enemy } from './models/Enemy';
 import { Tower } from './models/Tower';
 import { Bullet } from './models/Bullet';
 import { GRID_SIZE } from '@/data/gameData';
+import type { MapIndex, TowerData, EnemyData } from '@/types/game'
+
+interface standbyEnemyQueue{
+    params:EnemyData,
+    path:any,
+    delay:number,
+}
+
+interface UnitCanvasProps {
+    // mapData: MapData;
+    onTap: (mapIndex: MapIndex) => void;
+    onDestroy: (enemy: Enemy) => void;
+    onGoal: (enemy: Enemy) => void; // 💡 onGoalを追加
+}
+
+export interface UnitCanvasRefHandle {
+    addTower: (params: any, mapIndex: any) => void;
+    addEnemyQueue: (params: EnemyData, path: any, delay: number) => void;
+    play: () => void;
+    stop: () => void;
+    removeTower: (params: any) => void;
+    refreshCanvasManually: () => void;
+}
+
 
 /**
  * enemyやtowerの描画を管理
  * 親からの命令を受け付けるようにする
  */
-const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
+const UnitCanvas = forwardRef<UnitCanvasRefHandle, UnitCanvasProps>(({onTap,onDestroy,onGoal},ref) =>{
 
 	console.log('UnitCanvas が再レンダリングされました');
 
@@ -19,12 +42,12 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 	let towerListRef    = useRef<Tower[]>([]);
 	let bulletListRef   = useRef<Bullet[]>([]);
 	let hitCanonListRef = useRef<any[]>([]);//大砲に当たった相手の記録
-	let standbyEnemyRef = useRef(null);
+	let standbyEnemyRef = useRef<standbyEnemyQueue | null | undefined >(null);
 	// enemy配置queue
-	let enemyQueueRef = useRef([]);
-	const enqueueEnemy = ( queue ) => {
+	let enemyQueueRef = useRef<standbyEnemyQueue[]>([]);
+	const enqueueEnemy = ( queue:standbyEnemyQueue ) => {
 		console.log('queue:',queue)
-	  enemyQueueRef.current.push(queue);
+		enemyQueueRef.current.push(queue);
 	};
 	const dequeueEnemy = () => {
 	    if (enemyQueueRef.current.length > 0) {
@@ -39,7 +62,7 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 	let isPlayRef = useRef(false);
 
 	// キャンバス
-	const canvasRef = useRef();
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	// 親(ref)に対して公開するロジックを定義
 	useImperativeHandle(ref,()=>({
@@ -80,12 +103,12 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 	 * @param {object} - params
 	 * @param {x:number,y:number} - path mapData Index 
 	 */
-	function addEnemy( params:object, path:string[] ){
+	function addEnemy( params:EnemyData, path:string[] ){
 		const enemy = new Enemy( params, path );
 		enemyListRef.current.push( enemy );
 	}
 
-	function addEnemyQueue( params:object, path:string[], delay:number ) {
+	function addEnemyQueue( params:EnemyData, path:string[], delay:number ) {
 		enqueueEnemy({params:params,path:path,delay:delay});
 	}
 
@@ -95,14 +118,19 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 	 * @param {object} - params
 	 * @param {x:number,y:number} - position mapData Index 
 	 */
-	function addTower( params:object, position:{x:number,y:number} ) {
+	function addTower( params:TowerData, position:{x:number,y:number} ) {
 		const tower = new Tower( params, position );
 		towerListRef.current.push( tower );
 		console.log('towerListRef.current:',towerListRef.current)
 
 		// 置いた瞬間の描画(anime停止してても可能)
 		const canvas = canvasRef.current;
+		if(!canvas) return;
 		const ctx = canvas.getContext('2d');
+		if(!ctx){
+			console.error('ctx not found')
+			return;
+		}
 		drawTowerList( ctx , 0);
 	}
 
@@ -122,9 +150,14 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 			return;
 		}
 		const an = canvasRef.current;
+		if(!an) return;
 		const ctx = an.getContext('2d');
+		if(!ctx){
+			console.error('ctx not found')
+			return;
+		}
 		isPlayRef.current = true;
-		gameStart( ctx, mapData );
+		gameStart( ctx );
 	}
 
 
@@ -176,13 +209,13 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 	 * @param 
 	 * @returns {void}
 	 */
-	function gameStart( ctx:CanvasRenderingContext2D, mapData:array ){
+	function gameStart( ctx:CanvasRenderingContext2D ){
 
 		console.log('ゲーム開始')
 		let lastTime = 0; 
     	let isInitialFrameAfterResume = true;
 
-		function animate( timestamp ){
+		function animate( timestamp:number ){
 			// console.log('animate:',timestamp)
 
 			// ゲーム一時停止
@@ -249,13 +282,21 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 		drawTowerList( ctx, timestamp );
 
 		// 弾
-		drawBulletList( ctx, timestamp );
+		drawBulletList( ctx );
 	}
 
 	// 手動でのキャンバス更新
 	function refreshCanvasManually() {
-		const an = canvasRef.current;
-		const ctx = an.getContext('2d');
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext('2d');
+
+		if (!ctx) {
+	        console.error("Failed to get 2D rendering context.");
+	        return;
+	    }
+
 		refreshCanvas(ctx,0);
 	}
 
@@ -365,7 +406,7 @@ const UnitCanvas = forwardRef(({mapData,onTap,onDestroy,onGoal},ref) =>{
 		bulletListRef.current.push( bullet );
 	}
 
-	function drawBulletList( ctx:CanvasRenderingContext2D, time:number ){
+	function drawBulletList( ctx:CanvasRenderingContext2D){
 		for( let i=0;i<bulletListRef.current.length;i++ ){
 			const b = bulletListRef.current[i];
 			b.update();
